@@ -1,4 +1,4 @@
-# hwaiting
+# Orion
 Simple MBTA notification app
 
 Written in Swift. Purpose of app is to eliminate the need for user to constantly fumble with an app to see when the next bus/train is coming.
