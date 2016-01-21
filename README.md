@@ -2,7 +2,7 @@
 
 Get the location of your next MBTA train. Follow (@TrackMBTA)
 
-![alt tag](images/example.png)
+![alt tag](sample_tweet.png)
 
 ## Usage
 The bot understands commands in this format:
