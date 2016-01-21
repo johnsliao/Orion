@@ -17,6 +17,22 @@ The bot understands commands in this format:
 - Kingston Line (inbound) - `@TrackMBTA kingston inbound`
 - Fitchburg Line (outbound) - `@TrackMBTA Fitchburg out`
 
+### Supported commuter rail lines
+```
+"Fairmount Line
+"Fitchburg Line
+"Framingham/Worcester Line
+"Franklin Line
+Greenbush Line
+Haverhill Line
+Lowell Line
+Needham Line
+Newburyport/Rockport Line
+Providence/Stoughton Line
+Kingston/Plymouth Line
+"Middleborough/Lakeville Line
+```
+
 ### Where is the bot running?
 
 The bot is running on [Amazon Web Services (AWS)](https://aws.amazon.com/). The bot is not resource intensive and runs pretty much free for the first year as a micro instance.
