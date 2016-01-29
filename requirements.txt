@@ -7,3 +7,4 @@ requests-oauthlib==0.6.0
 rq==0.5.6
 twython==3.3.0
 wheel==0.24.0
+motionless==1.2
