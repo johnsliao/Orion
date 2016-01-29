@@ -69,6 +69,7 @@ def query_mbta(route_id, direction_name):
     for direction in directions:
         mbta_direction_name = direction['direction_name'].lower()
         mbta_trip_name = direction['trip'][0]['trip_name']
+        mbta_trip_headsign = direction['trip'][0]['trip_headsign']
         mbta_vehicle = direction['trip'][0]['vehicle']
         mbta_trip_id = direction['trip'][0]['trip_id']
 
@@ -79,19 +80,20 @@ def query_mbta(route_id, direction_name):
             logging.info("Successfully retrieval for line %s, %s, %s, %s" % (mbta_trip_id,
                                                                              route_id,
                                                                              mbta_trip_name,
+                                                                             mbta_trip_headsign,
                                                                              mbta_direction_name))
-            return lat, lon, mbta_trip_name
+            return lat, lon, mbta_trip_name, mbta_trip_headsign, mbta_direction_name
 
     logging.info("MBTA api query successful, however could not find trip: %s, %s" % (route_id, direction_name))
 
     return 0, 0, None
 
-def generate_reply_tweet(tweet_from, trip_name, direction_name):
-    return "@%s %s %s location" % (tweet_from, direction_name.capitalize(), trip_name.capitalize())
+def generate_reply_tweet(tweet_from, mbta_direction_name, trip_name, mbta_trip_headsign):
+    return "@%s %s %s train location" % (tweet_from, mbta_trip_headsign, mbta_direction_name)
 
 def generate_error_tweet(TrackMBTA, tweet_from, tweet_id):
     logging.info("Tweeting back now: @%s Sorry I couldn't find the train location!" % (tweet_from))
-    TrackMBTA.update_status(status=("@%s Looks like %s doesn't exist!" % (tweet_from)),
+    TrackMBTA.update_status(status=("@%s Sorry I couldn't find the train location!" % (tweet_from)),
                             in_reply_to_status_id=tweet_id)
 
 def does_route_exist(route_input):
@@ -146,11 +148,11 @@ class MyStreamer(TwythonStreamer):
                     logging.info("Tweet received: %s from %s" % (tweet_text, tweet_from))
 
                     # Will return lat, lon = 0,0 if no train found
-                    lat, lon, trip_name = query_mbta(route_id, direction_name)
+                    lat, lon, trip_name, mbta_trip_headsign, mbta_direction_name = query_mbta(route_id, direction_name)
 
                     if lat is not 0 and lon is not 0:
                         # Generate reply tweet
-                        reply_tweet = generate_reply_tweet(tweet_from, direction_name, trip_name)
+                        reply_tweet = generate_reply_tweet(tweet_from, mbta_direction_name, trip_name, mbta_trip_headsign)
 
                         # Generate google map
                         create_image(lat, lon)
