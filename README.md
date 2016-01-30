@@ -35,7 +35,7 @@ Kingston/Plymouth Line
 
 ### Where is the bot running?
 
-The bot is running on [Amazon Web Services (AWS)](https://aws.amazon.com/). The bot is not resource intensive and runs pretty much free for the first year as a micro instance.
+The bot is running on Digital Ocean Droplet instance [Sign up $10 off your first month](https://m.do.co/c/b2c8c49bf606) Disclaimer: Referral Link. The bot is not resource intensive and runs pretty much for free
 
 # Running
 
