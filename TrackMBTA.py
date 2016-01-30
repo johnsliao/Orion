@@ -58,38 +58,42 @@ def query_mbta(route_id, direction_name):
     raw_response = requests.get(url).text
     decoded_json = json.loads(raw_response)
 
-    if 'error' in decoded_json:
-        logging.info("MBTA api query error for route_id: %s" % route_id)
-        raise ValueError('MBTA api query error. Route not found')
-
-        return 0, 0, None
+    print url
+    try:
+        if 'error' in decoded_json:
+            logging.info("MBTA api query error for route_id: %s" % route_id)
+            raise ValueError('MBTA api query error. Route not found')
+    except ValueError as e:
+        print e
+        return 0, 0
 
     directions = [direction for direction in decoded_json['direction']]
 
     for direction in directions:
+        mbta_trip = direction['trip']
         mbta_direction_name = direction['direction_name'].lower()
-        mbta_trip_name = direction['trip'][0]['trip_name']
-        mbta_trip_headsign = direction['trip'][0]['trip_headsign']
-        mbta_vehicle = direction['trip'][0]['vehicle']
-        mbta_trip_id = direction['trip'][0]['trip_id']
-
-        lat = mbta_vehicle['vehicle_lat']
-        lon = mbta_vehicle['vehicle_lon']
 
         if mbta_direction_name == direction_name:
-            logging.info("Successfully retrieval for line %s, %s, %s, %s" % (mbta_trip_id,
-                                                                             route_id,
-                                                                             mbta_trip_name,
-                                                                             mbta_trip_headsign,
-                                                                             mbta_direction_name))
-            return lat, lon, mbta_trip_name, mbta_trip_headsign, mbta_direction_name
+            for trip in mbta_trip:
+                mbta_trip_id = trip['trip_id']
+                if 'vehicle' in trip:
+                    mbta_vehicle = trip['vehicle']
+
+                    lat = mbta_vehicle['vehicle_lat']
+                    lon = mbta_vehicle['vehicle_lon']
+
+
+                    logging.info("Successfully retrieval for line %s, %s, %s" % (mbta_trip_id,
+                                                                                     route_id,
+                                                                                     mbta_direction_name))
+                    return lat, lon
 
     logging.info("MBTA api query successful, however could not find trip: %s, %s" % (route_id, direction_name))
 
-    return 0, 0, None
+    return 0, 0
 
-def generate_reply_tweet(tweet_from, mbta_direction_name, trip_name, mbta_trip_headsign):
-    return "@%s %s %s train location" % (tweet_from, mbta_trip_headsign, mbta_direction_name)
+def generate_reply_tweet(tweet_from):
+    return "@%s Found your train!" % (tweet_from)
 
 def generate_error_tweet(TrackMBTA, tweet_from, tweet_id):
     logging.info("Tweeting back now: @%s Sorry I couldn't find the train location!" % (tweet_from))
@@ -135,7 +139,6 @@ class MyStreamer(TwythonStreamer):
         if tweet_from not in BLACKLIST and in_reply_to_status_id is None:
             split_tweet = tweet_text.split(' ') # Not very robust way to parse tweet. Fix later
 
-
             my_handle = split_tweet[0] # @TrackMBTA
             route_input = split_tweet[1].lower() # <Train Line>
             direction_input = split_tweet[2].lower() # Direction
@@ -148,11 +151,11 @@ class MyStreamer(TwythonStreamer):
                     logging.info("Tweet received: %s from %s" % (tweet_text, tweet_from))
 
                     # Will return lat, lon = 0,0 if no train found
-                    lat, lon, trip_name, mbta_trip_headsign, mbta_direction_name = query_mbta(route_id, direction_name)
+                    lat, lon = query_mbta(route_id, direction_name)
 
                     if lat is not 0 and lon is not 0:
                         # Generate reply tweet
-                        reply_tweet = generate_reply_tweet(tweet_from, mbta_direction_name, trip_name, mbta_trip_headsign)
+                        reply_tweet = generate_reply_tweet(tweet_from)
 
                         # Generate google map
                         create_image(lat, lon)
@@ -197,7 +200,7 @@ def main():
                         twitter['secret_token'])
 
     stream.statuses.filter(track='TrackMBTA')
-    #print query_mbta('CR-Lowell', 'Iutbound')
+    #print query_mbta('CR-Franklin', 'inbound')
 
 if __name__ == '__main__':
     main()
